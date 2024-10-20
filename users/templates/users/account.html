@@ -1,0 +1,12 @@
+{%extends 'base.html'%}
+{%block layout%}
+<h1>{{ user.firstname }}'s Account</h1>
+
+<p>Email: {{ user.email }}</p>
+<p>Phone: {{ user.phone_number }}</p>
+<p>Shipping Address: {{ user.shipping_address }}</p>
+<p>Billing Address: {{ user.billing_address }}</p>
+<p>Preferred Currency: {{ user.preferred_currency }}</p>
+<p>Preferred Language: {{ user.preferred_language }}</p>
+
+{%endblock%}
