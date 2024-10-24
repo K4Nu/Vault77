@@ -1,6 +1,10 @@
 from allauth.account.forms import SignupForm
 from django import forms
 from django.contrib.auth import get_user_model
+from django import forms
+from django.contrib.auth.models import User
+from django.contrib.auth.hashers import check_password
+from docutils.nodes import label
 
 # Get the custom user model (AppUser in this case)
 User = get_user_model()
@@ -43,10 +47,22 @@ class CustomSignupForm(SignupForm):
         user.save()
         return user
 
-
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import check_password
+class UserInfoForm(forms.Form):
+    firstname = forms.CharField(
+        max_length=100,
+        label="First Name",
+        widget=forms.TextInput(attrs={'placeholder': 'First Name'})
+    )
+    lastname = forms.CharField(
+        max_length=100,
+        label="Last Name",
+        widget=forms.TextInput(attrs={'placeholder': 'Last Name'})
+    )
+    phone_number = forms.CharField(
+        max_length=15,
+        label="Phone Number",
+        widget=forms.TextInput(attrs={'placeholder': 'Phone Number'})  # Corrected placeholder
+    )
 
 class PasswordChangeForm(forms.Form):
     current_password = forms.CharField(widget=forms.PasswordInput(), label="Current Password")
@@ -65,7 +81,6 @@ class PasswordChangeForm(forms.Form):
 
     def clean_new_password1(self):
         new_password1 = self.cleaned_data.get('new_password1')
-        # Example password strength check: you can modify this to your needs
         if len(new_password1) < 8:
             raise forms.ValidationError("The new password must be at least 8 characters long.")
         if not any(char.isdigit() for char in new_password1):
