@@ -32,12 +32,9 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
-    shipping_address = models.TextField(blank=True, null=True)
-    billing_address = models.TextField(blank=True, null=True)
     is_verified = models.BooleanField(default=False)
-    preferred_currency = models.CharField(max_length=10, default='USD')
-    preferred_language = models.CharField(max_length=10, default='en')
     #wishlist = models.ManyToManyField('Product', related_name='wishlisted_by', blank=True)
+    #possibly change to is_active by default=False
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 
@@ -52,3 +49,19 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     class Meta:
         verbose_name = 'user'
         verbose_name_plural = 'users'
+
+class AddressModel(models.Model):
+    user=models.ForeignKey("AppUser", on_delete=models.CASCADE,related_name="address")
+    address1=models.CharField(max_length=255)
+    address2=models.CharField(max_length=255,blank=True,null=True)
+    city=models.CharField(max_length=100)
+    country=models.CharField(max_length=100)
+    postal_code=models.CharField(max_length=20)
+
+    def __str__(self):
+        return f'{self.address1}, {self.city}, {self.country}'
+
+    class Meta:
+        verbose_name="Address"
+        verbose_name_plural = 'Addresses'
+        ordering = ['city']

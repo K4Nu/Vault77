@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block layout %}
+<h1>ESSA</h1>
+
+<!-- Button to load users dynamically -->
+<button type="button" class="btn btn-secondary" hx-get="{% url 'show-users' %}" hx-target="#user-list" hx-swap="outerHTML">
+    Click to show all users
+</button>
+
+<!-- This div will be populated with the list of users -->
+<div id="user-list"></div>
+
+{% endblock %}

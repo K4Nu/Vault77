@@ -149,7 +149,7 @@ LOGIN_URL = '/accounts/login/'
 PROFILE_CREATION_REDIRECT_URL = '/profile/'
 LOGIN_REDIRECT_URL = '/'  # Optional, but recommended for default login redirection
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-
+ACCOUNT_CHANGE_EMAIL =True
 
 
 

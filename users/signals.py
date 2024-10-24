@@ -10,6 +10,7 @@ from .models import AppUser
 def email_confirmed_callback(request,email_address, **kwargs):
     user=AppUser.objects.get(email=email_address.email)
     user.is_verified=True
+    user.is_active=True
     user.save()
 
 @receiver(post_save,sender=AppUser)
@@ -17,7 +18,8 @@ def super_user_verification(sender,instance,created,**kwargs):
     if created and (instance.is_superuser or instance.is_staff):
         if not instance.is_verified:
             instance.is_verified=True
-            instance.save(update_fields=["is_verified"])
+            instance.is_active=True
+            instance.save(update_fields=["is_verified","is_active"])
         email_address,email_created=EmailAddress.objects.get_or_create(user=instance,
                                                                        email=instance.email,
                                                                        defaults={"verified":True,"primary":True})
