@@ -6,7 +6,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path("",user_v.index),
+    path("",user_v.index,name="index"),
     path('admin/', admin.site.urls),
     path('accounts/', include('allauth.urls')),
     path("index/",user_v.index,name="index"),

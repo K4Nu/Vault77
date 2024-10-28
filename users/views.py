@@ -3,7 +3,7 @@ from django.urls import reverse_lazy,reverse
 from django.http import HttpResponse
 import datetime
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import DetailView, UpdateView, FormView,ListView
+from django.views.generic import DetailView, UpdateView, FormView,ListView,DeleteView
 from .models import AppUser
 from .forms import PasswordChangeForm,EmailChangeForm, UserInfoForm
 from django.contrib.auth import update_session_auth_hash
@@ -28,7 +28,6 @@ class AccountDetailView(LoginRequiredMixin,DetailView):
         context=super().get_context_data(**kwargs)
         context["section"]="account"
         return context
-
 
 class UpdateUserInfo(FormView):
     form_class = UserInfoForm
@@ -56,7 +55,9 @@ class UpdateUserInfo(FormView):
         # Save the updated user instance
         user.save()
         if self.request.headers.get("HX-Request"):
-            return HttpResponse('<div class="alert alert-success">User information changed successfully!</div>')
+            response = HttpResponse()
+            response["HX-Refresh"] = "true"
+            return response
 
         return super().form_valid(form)
 
@@ -83,8 +84,9 @@ class UpdateUserPassword(FormView):
         update_session_auth_hash(self.request,user)
 
         if self.request.headers.get("HX-Request"):
-            return HttpResponse('<div class="alert alert-success">Password changed successfully!</div>')
-        return super().form_valid(form)
+            response = HttpResponse()
+            response["HX-Refresh"] = "true"
+            return response
 
     def form_invalid(self, form):
         if self.request.headers.get("HX-Request"):
@@ -94,11 +96,6 @@ class UpdateUserPassword(FormView):
 
 def index(request):
     return render(request,"users/index.html")
-
-class UserListView(ListView):
-    model = AppUser  # Use the custom AppUser model
-    template_name = 'users/user_list.html'  # Define your template path
-    context_object_name = 'users'  # Name the conte
 
 class UpdateEmailView(FormView):
     form_class = EmailChangeForm  # Corrected from 'form' to 'form_class'
@@ -111,7 +108,9 @@ class UpdateEmailView(FormView):
         user.email = new_email
         user.save()  # Don't forget to save the user with the new email
         if self.request.headers.get("HX-Request"):
-            return HttpResponse('<div class="alert alert-success">Email changed successfully!</div>')
+            response = HttpResponse()
+            response["HX-Refresh"] = "true"
+            return response
         return super().form_valid(form)
 
     def form_invalid(self, form):
@@ -122,3 +121,10 @@ class UpdateEmailView(FormView):
         return super().form_invalid(form)
 
 
+class UserDeleteView(DeleteView):
+    model=AppUser
+    success_url = "/"
+    template_name = "users/user_delete.html"
+
+    def get_object(self, queryset=None):
+        return self.request.user
