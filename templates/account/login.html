@@ -62,6 +62,13 @@
                         {% if redirect_field_value %}
                             <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
                         {% endif %}
+                         {% if SOCIALACCOUNT_ENABLED %}
+                        <div class="mt-3">
+                            <a href="{% provider_login_url 'google' process='signup' %}" class="btn btn-outline-danger w-100" id="google-signup-button">
+                                <i class="bi bi-google"></i> {% trans "Sign up with Google" %}
+                            </a>
+                        </div>
+                    {% endif %}
                     </form>
                     <p class="mt-3">
                         <a href="{% url 'account_reset_password' %}">{% trans "Forgot your password?" %}</a>

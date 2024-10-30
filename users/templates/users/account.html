@@ -1,5 +1,8 @@
 {% extends 'users/account_base.html' %}
+{% load poll_extras %}
+
 {% block account_content %}
+{% is_google_user as google_user %}
 <div class="col-md-9">
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white">
@@ -26,37 +29,40 @@
             </div>
 
             <!-- Section 2: Email -->
+            {% if not google_user %}
             <div class="mb-4 p-4 border rounded bg-info text-white">
                 <h5 class="border-bottom pb-2 mb-3 text-light">Contact Information</h5>
                 <p><strong>Email:</strong> {{ user.email }}</p>
-                <div class="text-end">
-                    <a href="{% url 'change_email' %}"
-                       class="btn btn-sm btn-outline-light"
-                       hx-get="{% url 'change_email' %}"
-                       hx-target="#emailChangeModal .modal-body"
-                       data-toggle="modal"
-                       data-target="#emailChangeModal">
-                        <i class="fas fa-pencil-alt"></i> Change Email
-                    </a>
-                </div>
+                    <div class="text-end">
+                        <a href="{% url 'change_email' %}"
+                           class="btn btn-sm btn-outline-light"
+                           hx-get="{% url 'change_email' %}"
+                           hx-target="#emailChangeModal .modal-body"
+                           data-toggle="modal"
+                           data-target="#emailChangeModal">
+                            <i class="fas fa-pencil-alt"></i> Change Email
+                        </a>
+                    </div>
             </div>
+            {%endif%}
 
             <!-- Section 3: Password -->
+            {% if not google_user %}
             <div class="mb-4 p-4 border rounded bg-warning">
                 <h5 class="border-bottom pb-2 mb-3">Security</h5>
                 <p><strong>Password:</strong> ********</p>
-                <div class="text-end">
-                    <a href="{% url 'change_password' %}"
-                       class="btn btn-sm btn-outline-dark"
-                       hx-get="{% url 'change_password' %}"
-                       hx-target="#passwordChangeModal .modal-body"
-                       data-toggle="modal"
-                       data-target="#passwordChangeModal">
-                        <i class="fas fa-pencil-alt"></i> Change Password
-                    </a>
-                </div>
+                    <div class="text-end">
+                        <a href="{% url 'change_password' %}"
+                           class="btn btn-sm btn-outline-dark"
+                           hx-get="{% url 'change_password' %}"
+                           hx-target="#passwordChangeModal .modal-body"
+                           data-toggle="modal"
+                           data-target="#passwordChangeModal">
+                            <i class="fas fa-pencil-alt"></i> Change Password
+                        </a>
+                    </div>
             </div>
-
+            {%endif%}
             <!-- Section 4: Account Deletion -->
             <div class="mb-4 p-4 border rounded bg-danger text-white">
                 <h5 class="border-bottom pb-2 mb-3">Account Management</h5>
