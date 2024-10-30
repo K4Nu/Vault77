@@ -46,14 +46,16 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "users.middleware.GoogleLoginRestrictionMiddleware",  # Corrected middleware path
 ]
+
 
 ROOT_URLCONF = "ecommerce.urls"
 AUTH_USER_MODEL = 'users.AppUser'
 ACCOUNT_FORMS = {
     'signup': 'users.forms.CustomSignupForm',
 }
-SITE_ID=1
+SITE_ID=2
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
@@ -135,7 +137,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'optional'
 ACCOUNT_RATE_LIMITS = {
     'login': '20/m',
     'login_failed': '5/m',
@@ -150,7 +152,7 @@ PROFILE_CREATION_REDIRECT_URL = '/profile/'
 LOGIN_REDIRECT_URL = '/'  # Optional, but recommended for default login redirection
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_CHANGE_EMAIL =True
-
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = False
 
 EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND")
 EMAIL_HOST = os.environ.get("EMAIL_HOST")
@@ -158,4 +160,18 @@ EMAIL_PORT = os.environ.get("EMAIL_PORT")
 EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS")
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD")
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APP': {
+            'client_id': os.environ.get("GOOGLE_CLIENT_ID"),
+            'secret': os.environ.get("GOOGLE_CLIENT_SECRET"),
+            'key': ''
+        },
+        'AUTH_PARAMS': {
+            'prompt': 'select_account'
+        }
+    }
+}
+
 
