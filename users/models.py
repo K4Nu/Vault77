@@ -34,7 +34,6 @@ class AppUser(AbstractBaseUser, PermissionsMixin):
     phone_number = models.CharField(max_length=15, unique=True, blank=True, null=True)
     is_verified = models.BooleanField(default=False)
     #wishlist = models.ManyToManyField('Product', related_name='wishlisted_by', blank=True)
-    #possibly change to is_active by default=False
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

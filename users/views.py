@@ -8,13 +8,6 @@ from .models import AppUser
 from .forms import PasswordChangeForm,EmailChangeForm, UserInfoForm
 from django.contrib.auth import update_session_auth_hash
 
-
-def index(request):
-    now = datetime.datetime.now()
-    html = "<html><body>It is now %s.</body></html>" % now
-    return HttpResponse(html)
-
-
 class AccountDetailView(LoginRequiredMixin,DetailView):
     template_name = "users/account.html"
     model = AppUser
