@@ -18,11 +18,12 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+INTERNAL_IPS = ["127.0.0.1"]
 # Application definition
 
 INSTALLED_APPS = [
     "users",
+    "products",
     "widget_tweaks",
     "django.contrib.admin",
     "django.contrib.auth",
@@ -35,9 +36,12 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    "import_export",
+    "debug_toolbar"
 ]
 
 MIDDLEWARE = [
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -175,3 +179,13 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
+from import_export.formats.base_formats import CSV,JSON
+IMPORT_FORMATS = [CSV, JSON]
+EXPORT_FORMATS = [CSV, JSON]
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": os.environ.get("REDIS_URL"),
+    }
+}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block layout %}
+<div class="container mt-5">
+    <h2>Create Category</h2>
+    <form method="post" action="{% url 'create_category' %}">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            {{ form.name|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            <label for="parentCategory" class="form-label">Parent Category</label>
+            {{ form.parent_category|add_class:"form-select" }}
+        </div>
+
+        <!-- Dynamic Sizes Input Section -->
+        <div class="mb-3">
+            <label for="sizeInput" class="form-label">Add Size</label>
+            <div class="input-group">
+                <input type="text" id="sizeInput" class="form-control" placeholder="Enter size (e.g., S, M, L)" />
+                <button type="button" class="btn btn-primary" onclick="addSize()">Add Size</button>
+            </div>
+            <!-- Hidden input to hold sizes as JSON --
+            HERE is the sizes dependency !-->
+            <input type="hidden" name="sizes" id="sizesField" />
+        </div>
+
+        <!-- List of Sizes -->
+        <ul id="sizeList" class="list-group mb-3"></ul>
+
+        <button type="submit" class="btn btn-success">Create Category</button>
+    </form>
+</div>
+
+<script>
+    function addSize() {
+        const sizeInput = document.getElementById('sizeInput');
+        const sizeList = document.getElementById('sizeList');
+        const sizesField = document.getElementById('sizesField');
+
+        // Get the entered size
+        const size = sizeInput.value.trim();
+
+        if (size) {
+            // Add size to the display list
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = size;
+            sizeList.appendChild(listItem);
+
+            // Update the hidden sizes input as a JSON array
+            const sizes = JSON.parse(sizesField.value || '[]');
+            sizes.push(size);
+            sizesField.value = JSON.stringify(sizes);
+
+            // Clear the input field
+            sizeInput.value = '';
+        }
+    }
+</script>
+{% endblock %}
