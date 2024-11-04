@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    "import_export"
 ]
 
 MIDDLEWARE = [
@@ -175,3 +176,6 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 
+from import_export.formats.base_formats import CSV,JSON
+IMPORT_FORMATS = [CSV, JSON]
+EXPORT_FORMATS = [CSV, JSON]
