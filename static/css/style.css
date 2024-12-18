@@ -1,0 +1,27 @@
+/* Ensure Navbar has consistent height */
+#navbar {
+    position: relative; /* Makes dropdown positioning independent of navbar height */
+    z-index: 50; /* Ensures the navbar stays on top of other content */
+}
+
+/* Dropdown styles */
+#profileDropdown {
+    position: absolute;
+    top: 100%; /* Position below the profile button */
+    right: 0; /* Align to the right edge */
+    min-width: 12rem; /* Consistent dropdown width */
+    display: none; /* Hidden by default */
+    background-color: #fff; /* Dropdown background */
+    border-radius: 0.5rem; /* Rounded corners */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    z-index: 100; /* Ensure it's above other elements */
+}
+
+/* Show dropdown when visible */
+#profileDropdown.hidden {
+    display: none;
+}
+
+#profileDropdown:not(.hidden) {
+    display: block;
+}

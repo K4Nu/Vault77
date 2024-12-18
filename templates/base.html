@@ -1,0 +1,104 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% block title %}
+  {% endblock %}
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.0.2/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+{% load custom_tags %}
+  <!-- Navbar -->
+  <nav class="sticky bg-white shadow-md">
+    <div class="container mx-auto px-4 flex items-center justify-between h-16">
+      <!-- Left: Logo -->
+      <div class="text-lg font-bold text-gray-800">
+        Vault 77
+      </div>
+
+      <!-- Middle: Search Bar -->
+      <div class="flex items-center w-full max-w-md">
+        <div class="relative w-full">
+          <svg 
+            class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500"
+            xmlns="http://www.w3.org/2000/svg" 
+            fill="none" 
+            viewBox="0 0 24 24" 
+            stroke="currentColor"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1016.65 16.65l4.35 4.35zM14.1 9.6a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0z" />
+          </svg>
+          <input 
+            type="text" 
+            placeholder="Search" 
+            class="w-full py-2 pl-10 pr-4 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          />
+        </div>
+      </div>
+
+      <!-- Right: Icons and Profile Dropdown -->
+      <div class="flex items-center space-x-6">
+        <!-- Cart -->
+        <button class="relative text-gray-700 hover:text-blue-600">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+  <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
+</svg>
+        </button>
+
+        <!-- Favorite -->
+        <button class="relative text-gray-700 hover:text-blue-600">
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+    <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+  </svg>
+</button>
+
+
+        <!-- Profile Dropdown -->
+        <div class="relative">
+          <button 
+    id="profile-btn"
+    class="flex items-center space-x-2 text-gray-700 hover:text-blue-600 focus:outline-none"
+    onclick="toggleDropdown('profile-dropdown')">
+              {% if not request.user.profile.image %}
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+    </svg>
+              {% else %}
+              <img src="{{ request.user.profile.image.url }}" alt="" class="w-8 h-8 rounded-full">
+              {% endif %}
+  </button>
+          <!-- Dropdown Menu -->
+          <div 
+            id="dropdown-menu" 
+            class="absolute right-0 mt-2 w-48 bg-white border rounded-md shadow-lg z-10 hidden">
+            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">My Account</a>
+            <a href="#" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Settings</a>
+            <a href="{% url 'account_logout' %}" class="block px-4 py-2 text-gray-800 hover:bg-gray-100">Logout</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  {% block content %}
+  {% endblock %}
+  <script>
+    // JavaScript to toggle the dropdown menu
+    const profileBtn = document.getElementById('profile-btn');
+    const dropdownMenu = document.getElementById('dropdown-menu');
+
+    profileBtn.addEventListener('click', () => {
+      dropdownMenu.classList.toggle('hidden');
+    });
+
+    // Close dropdown if clicking outside
+    document.addEventListener('click', (event) => {
+      if (!dropdownMenu.contains(event.target) && !profileBtn.contains(event.target)) {
+        dropdownMenu.classList.add('hidden');
+      }
+    });
+  </script>
+</body>
+</html>
