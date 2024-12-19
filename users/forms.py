@@ -13,10 +13,10 @@ class MyCustomSignupForm(SignupForm):
 
     field_order = ['email', 'first_name', 'last_name', 'phone_number', 'password1', 'password2','newsletter']
 
-    def save_email(self):
+    def clean_email(self):
         email=self.cleaned_data['email']
         if CustomUser.objects.filter(email=email).exists():
-            raise forms.ValidationError("Email already exists")
+            raise forms.ValidationError("Email already in use")
         return email
 
     def save(self, request):

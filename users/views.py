@@ -1,13 +1,18 @@
+from allauth.account.models import EmailAddress
+from allauth.account.utils import send_email_confirmation
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.urls import reverse_lazy
-from django.views.generic import TemplateView, DetailView, FormView, UpdateView
+from django.views.generic import TemplateView, DetailView, FormView, UpdateView,View
 from users.models import Profile
 from django import forms
 from uuid import uuid4
 import os
+from django.contrib import messages
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 class ProfileView(LoginRequiredMixin,DetailView):
     model = Profile
@@ -52,3 +57,36 @@ class ProfileUpdateView(LoginRequiredMixin,UpdateView):
             if image.size > settings.MAX_IMAGE_SIZE:
                 raise forms.ValidationError("Image file size is too large.")
         return image
+
+
+class ResendVerificationEmail(View):
+    def get(self, request, *args, **kwargs):
+        return render(request, "users/resend_email_verification.html")
+
+    def post(self, request, *args, **kwargs):
+        email = request.POST.get("email")
+
+        # Validate email presence and format
+        if not email:
+            messages.error(request, "Please enter your email address.")
+            return redirect("user:resend_email_verification")
+
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, "Please enter a valid email address.")
+            return redirect("users:resend_email_verification")
+
+        # Check if the email exists and resend confirmation if applicable
+        try:
+            email_address = EmailAddress.objects.get(email=email)
+            if email_address.verified:
+                messages.info(request, "Your email address is already verified.")
+            else:
+                send_email_confirmation(request, email_address.user, email=email)
+                messages.success(request, "Verification email has been resent.")
+        except EmailAddress.DoesNotExist:
+            # Avoid leaking whether an email exists
+            messages.info(request, "If the email is associated with an account, a verification email will be resent.")
+
+        return redirect("users:resend_email_verification")
