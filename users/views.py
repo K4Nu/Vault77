@@ -14,6 +14,9 @@ from django.contrib import messages
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+class RedirectAccount(LoginRequiredMixin,View):
+    def get(self, request, *args, **kwargs):
+        return redirect("users:profile_view")
 class ProfileView(LoginRequiredMixin,DetailView):
     model = Profile
     template_name = "users/profile.html"
