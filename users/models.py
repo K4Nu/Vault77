@@ -39,3 +39,31 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.email
+
+class Profile(models.Model):
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='profile')
+    image = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    first_name = models.CharField(max_length=50, blank=True)
+    last_name = models.CharField(max_length=50, blank=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True)
+    newsletter = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f'{self.first_name or ""} {self.last_name or ""}'.strip()
+
+    def save(self, *args, **kwargs):
+        if self.image and not self.image.name.startswith("avatars/default"):
+            extension=os.path.splitext(self.image.name)[1].lower()
+            new_filename=f'{uuid4()}{extension}'
+            self.image.name=new_filename
+        super().save(*args,**kwargs)
+
+class Address(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='addresses')
+    street = models.CharField(max_length=50, blank=True)
+    city = models.CharField(max_length=50, blank=True)
+    zipcode = models.CharField(max_length=50, blank=True)
+    country = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return f'{self.street or ""}, {self.city or ""}, {self.zipcode or ""}, {self.country or ""}'.strip(", ")

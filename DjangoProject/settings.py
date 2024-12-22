@@ -136,7 +136,7 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-#AUTH_USER_MODEL = "users.CustomUser"
+AUTH_USER_MODEL = "users.CustomUser"
 #ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm'}
 
 STATIC_URL = 'static/'
