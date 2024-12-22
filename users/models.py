@@ -1,8 +1,10 @@
+from allauth.account.models import EmailAddress
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.models import BaseUserManager
 import os
 from uuid import uuid4
+from allauth.account.models import EmailAddress
 
 class CustomUserManager(BaseUserManager):
     """
@@ -27,7 +29,11 @@ class CustomUserManager(BaseUserManager):
         if not extra_fields.get('is_superuser'):
             raise ValueError("Superuser must have is_superuser=True.")
 
-        return self.create_user(email, password, **extra_fields)
+        user = self.create_user(email, password, **extra_fields)
+        EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
+        Profile.objects.create(user=user)
+        return user
+
 
 class CustomUser(AbstractUser):
     username=None
