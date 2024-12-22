@@ -137,7 +137,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
-#ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm'}
+ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm'}
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static",]
