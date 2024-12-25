@@ -5,7 +5,7 @@ from django.contrib.auth import get_user
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render,redirect
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, UpdateView,View
+from django.views.generic import DetailView, UpdateView, View, TemplateView
 from users.models import Profile
 from django import forms
 import os
@@ -89,3 +89,6 @@ class ResendVerificationEmail(View):
             messages.info(request, "If the email is associated with an account, a verification email will be resent.")
 
         return redirect("users:resend_email_verification")
+
+class TestView(TemplateView):
+    template_name="users/test.html"

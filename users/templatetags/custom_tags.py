@@ -1,5 +1,6 @@
 from django import template
 from django.forms import CheckboxInput
+from allauth.socialaccount.models import SocialAccount
 
 register = template.Library()
 

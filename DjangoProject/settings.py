@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 ]
-SITE_ID = 2
+SITE_ID = 3
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -166,3 +166,16 @@ ACCOUNT_LOGOUT_ON_GET=True
 ALLOWED_IMAGE_FILETYPES=[config("ALLOWED_IMAGE_FILETYPES")]
 MAX_IMAGE_SIZE=eval(config("MAX_IMAGE_SIZE"))
 SOCIALACCOUNT_LOGIN_ON_GET=True
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'prompt': 'select_account',  # Enables account selection
+        }
+    }
+}

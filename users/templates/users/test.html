@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% load socialaccount %}
+{% block content %}
+{% load custom_tags %}
+    {% if request.user|get_social_account %}
+    <p>esssa</p>
+    {% endif %}
+{% endblock %}
