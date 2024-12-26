@@ -1,9 +1,11 @@
-from allauth.account.forms import SignupForm
+from allauth.account.forms import SignupForm,ResetPasswordForm
+from allauth.account.utils import filter_users_by_email
+from allauth.socialaccount.models import SocialAccount
 from django import forms
 from django.conf import settings
 from django.contrib.auth import get_user
 from .models import Profile, CustomUser
-
+from allauth.account.utils import filter_users_by_email,get_adapter
 
 class MyCustomSignupForm(SignupForm):
     first_name = forms.CharField(max_length=50, label='First Name', required=True)
@@ -41,3 +43,13 @@ class MyCustomSignupForm(SignupForm):
 
         return user
 
+class MyCustomResetPasswordForm(ResetPasswordForm):
+   def clean_email(self):
+       email = self.cleaned_data['email']
+       email = get_adapter().clean_email(email)
+       self.users = CustomUser.objects.filter(email=email)
+       if not self.users.exists():
+           raise forms.ValidationError("Email does not exist")
+       elif SocialAccount.objects.filter(user__email=email).exists():
+           raise forms.ValidationError("Email is associated with a social account")
+       return email

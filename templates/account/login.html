@@ -106,5 +106,11 @@
             {% trans "I don't have an account" %}
         </a>
     </div>
+    <div class="mt-4 text-center">
+        <a href="{% url 'account_reset_password' %}"
+           class="text-indigo-600 hover:text-indigo-800 font-medium underline text-sm">
+            {% trans "Forgot password" %}
+        </a>
+    </div>
 </div>
 {% endblock content %}
