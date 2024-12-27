@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "allauth.socialaccount.providers.google",
 ]
-
+SITE_ID = 3
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -136,8 +136,9 @@ AUTHENTICATION_BACKENDS = [
     'allauth.account.auth_backends.AuthenticationBackend',
 ]
 
-#AUTH_USER_MODEL = "users.CustomUser"
-#ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm'}
+AUTH_USER_MODEL = "users.CustomUser"
+ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm',
+                 'reset_password':"users.forms.MyCustomResetPasswordForm",}
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static",]
@@ -166,3 +167,16 @@ ACCOUNT_LOGOUT_ON_GET=True
 ALLOWED_IMAGE_FILETYPES=[config("ALLOWED_IMAGE_FILETYPES")]
 MAX_IMAGE_SIZE=eval(config("MAX_IMAGE_SIZE"))
 SOCIALACCOUNT_LOGIN_ON_GET=True
+
+
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'prompt': 'select_account',  # Enables account selection
+        }
+    }
+}
