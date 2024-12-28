@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
-
+from django.core.validators import FileExtensionValidator
 
 class Category(models.Model):
     name = models.CharField(max_length=150)
@@ -41,3 +41,8 @@ class Product(models.Model):
             models.Index(fields=['name']),
             models.Index(fields=['created']),
         ]
+
+class ProductImage(models.Model):
+    product=models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
+    image=models.ImageField(upload_to='products/', validators=[FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'png'])])
+
