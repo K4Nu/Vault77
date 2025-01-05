@@ -33,7 +33,10 @@ ALLOWED_HOSTS = []
 
 INSTALLED_APPS = [
     'users',
+    "products",
+    "django_htmx",
     'widget_tweaks',
+    'debug_toolbar',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,6 +61,12 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "allauth.account.middleware.AccountMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
+    'django_htmx.middleware.HtmxMiddleware',
+]
+
+INTERNAL_IPS = [
+     "127.0.0.1",
 ]
 
 ROOT_URLCONF = 'DjangoProject.urls'
@@ -138,7 +147,8 @@ AUTHENTICATION_BACKENDS = [
 
 AUTH_USER_MODEL = "users.CustomUser"
 ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm',
-                 'reset_password':"users.forms.MyCustomResetPasswordForm",}
+                 'reset_password':"users.forms.MyCustomResetPasswordForm",
+                 "set_password":"users.forms.CustomSetPasswordForm",}
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static",]

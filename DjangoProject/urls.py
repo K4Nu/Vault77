@@ -18,12 +18,17 @@ from django.contrib import admin
 from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
-
+from users.views import CustomPasswordChangeView,CustomEmailView,CustomPasswordResetFromKeyDoneView
+import debug_toolbar
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('users.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
+    path("accounts/email/",CustomEmailView.as_view(),name="account_email"),
+    path("accounts/password/reset/key/done/",CustomPasswordResetFromKeyDoneView.as_view(),name="account_reset_password_from_key_done"),
+    path('accounts/password/change/', CustomPasswordChangeView.as_view(), name='account_change_password'),
     path('accounts/', include('allauth.urls')),
+    path('__debug__/', include(debug_toolbar.urls)),
 ]
 if settings.DEBUG:
     urlpatterns+= static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

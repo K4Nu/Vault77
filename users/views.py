@@ -1,18 +1,23 @@
 from allauth.account.models import EmailAddress
 from allauth.account.utils import send_email_confirmation
+from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.contrib.auth import get_user
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render,redirect
 from django.urls import reverse_lazy
-from django.views.generic import DetailView, UpdateView, View, TemplateView
+from django.views.generic import DetailView, UpdateView, View, TemplateView, FormView
 from users.models import Profile
 from django import forms
 import os
 from django.contrib import messages
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
-
+from .forms import CustomChangePasswordForm
+from allauth.account.views import PasswordChangeView, EmailView,PasswordResetFromKeyDoneView
+from django.http import HttpResponse, JsonResponse
+from django.template.loader import render_to_string
+from django.contrib.auth.mixins import UserPassesTestMixin
 class ProfileView(LoginRequiredMixin,DetailView):
     model = Profile
     template_name = "users/profile.html"
@@ -90,5 +95,78 @@ class ResendVerificationEmail(View):
 
         return redirect("users:resend_email_verification")
 
-class TestView(TemplateView):
+
+class CustomPasswordChangeView(PasswordChangeView):
+    template_name = "account/password_change.html"
+    partial_template_name = "account/password_reset_form_partial.html"
+    success_url = reverse_lazy("users:profile_view")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.htmx:
+            return redirect("users:profile_view")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_template_names(self):
+        if self.request.htmx:
+            return [self.partial_template_name]
+        return [self.template_name]
+
+    def form_valid(self, form):
+        form.save()  # Save the form first
+        if self.request.htmx:
+            messages.success(self.request, "Your password has been changed successfully.")
+            response = HttpResponse()
+            response["HX-Redirect"] = self.get_success_url()
+            return response
+        messages.success(self.request, "Your password has been changed successfully.")
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.htmx:
+            form_html = render_to_string(self.partial_template_name, {'form': form}, request=self.request)
+            return HttpResponse(form_html)
+        return super().form_invalid(form)
+
+
+class CustomEmailView(EmailView):
+    template_name = "account/email.html"
+    success_url = reverse_lazy("users:profile_view")
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.htmx:
+            return redirect("users:profile_view")
+        return super().dispatch(request, *args, **kwargs)
+
+    def test_func(self):
+        return not SocialAccount.objects.filter(user=self.request.user).exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Social account users cannot access this page.")
+        return redirect("users:profile_view")
+
+    def form_valid(self, form):
+        form.save()
+        if self.request.htmx:
+            messages.success(self.request, "Your email address has been updated successfully.")
+            response = HttpResponse()
+            response["HX-Redirect"] = self.get_success_url()
+            return response
+        return super().form_valid(form)
+class TestView(UserPassesTestMixin,TemplateView):
     template_name="users/test.html"
+
+    def test_func(self):
+        return not SocialAccount.objects.filter(user=self.request.user).exists()
+
+    def handle_no_permission(self):
+        messages.error(self.request, "Social account users cannot access this page.")
+        return redirect("users:profile_view")
+    def get_context_data(self,**kwargs):
+        context=super().get_context_data(**kwargs)
+        context["form"]=CustomChangePasswordForm(self.request.user)
+        return context
+
+class CustomPasswordResetFromKeyDoneView(PasswordResetFromKeyDoneView):
+    def get(self,request,*args,**kwargs):
+        messages.success(request, "Password has been reset successfully. Please login with your new password.")
+        return redirect("account_login")
