@@ -8,6 +8,8 @@ from .models import CustomUser, Profile
 from django.http import HttpResponseRedirect
 from allauth.core.exceptions import ImmediateHttpResponse
 from django.urls import reverse
+from django.db.models.signals import post_save, pre_save
+from allauth.account.forms import SetPasswordForm
 
 @receiver(pre_social_login)
 def pre_social_login_handler(sender,request,sociallogin,**kwargs):
@@ -23,17 +25,24 @@ def pre_social_login_handler(sender,request,sociallogin,**kwargs):
 
     return
 
+@receiver(post_save,sender=CustomUser)
+def create_user_profile(sender,instance,created,**kwargs):
+    if created and not Profile.objects.filter(user=instance).exists():
+        Profile.objects.create(user=instance,
+                               first_name=instance.first_name,
+                               last_name=instance.last_name)
+
 @receiver(social_account_added)
 def social_account_added_handler(sender,request,sociallogin,**kwargs):
-    if not sociallogin.is_existing:
-        user=sociallogin.user
-        email=user.email
+    user=sociallogin.user
+    email=user.email
 
-        if not Profile.objects.filter(user=user).exists():
-            Profile.objects.create(user=user,
+    if not Profile.objects.filter(user=user).exists():
+        Profile.objects.create(user=user,
                                    first_name=user.first_name,
                                    last_name=user.last_name)
 
-        if not EmailAddress.objects.filter(email=email).exists():
-            EmailAddress.objects.create(user=user,email=email,primary=True,verified=False)
+    if not EmailAddress.objects.filter(email=email).exists():
+        EmailAddress.objects.create(user=user,email=email,primary=True,verified=False)
     return
+
