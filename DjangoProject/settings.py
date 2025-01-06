@@ -190,3 +190,5 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+ACCOUNT_EMAIL_CONFIRMATION_SENT_MESSAGE="Registration successful! Please check your email to verify your account."

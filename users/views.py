@@ -14,10 +14,21 @@ from django.contrib import messages
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 from .forms import CustomChangePasswordForm
-from allauth.account.views import PasswordChangeView, EmailView,PasswordResetFromKeyDoneView
+from allauth.account.views import PasswordChangeView, EmailView, PasswordResetFromKeyDoneView, ConfirmEmailView, \
+    SignupView,PasswordResetView
 from django.http import HttpResponse, JsonResponse
 from django.template.loader import render_to_string
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib.messages import get_messages
+from django.contrib.auth import logout
+class SignupView(SignupView):
+    def form_valid(self, form):
+        response=super().form_valid(form)
+        storage=get_messages(self.request)
+        for message in storage:
+            pass
+        messages.success(self.request, "Registration successful! Please check your email to verify your account.")
+        return redirect("account_login")
 class ProfileView(LoginRequiredMixin,DetailView):
     model = Profile
     template_name = "users/profile.html"
@@ -74,7 +85,6 @@ class ResendVerificationEmail(View):
         if not email:
             messages.error(request, "Please enter your email address.")
             return redirect("user:resend_email_verification")
-
         try:
             validate_email(email)
         except ValidationError:
@@ -131,12 +141,13 @@ class CustomPasswordChangeView(PasswordChangeView):
 class CustomEmailView(EmailView):
     template_name = "account/email.html"
     success_url = reverse_lazy("users:profile_view")
-
+    """
+    After tests put it back
     def dispatch(self, request, *args, **kwargs):
         if not request.htmx:
             return redirect("users:profile_view")
         return super().dispatch(request, *args, **kwargs)
-
+    """
     def test_func(self):
         return not SocialAccount.objects.filter(user=self.request.user).exists()
 
@@ -168,5 +179,41 @@ class TestView(UserPassesTestMixin,TemplateView):
 
 class CustomPasswordResetFromKeyDoneView(PasswordResetFromKeyDoneView):
     def get(self,request,*args,**kwargs):
+        if request.user.is_authenticated:
+            logout(request)
+        storage=get_messages(self.request)
+        for message in storage:
+            pass
         messages.success(request, "Password has been reset successfully. Please login with your new password.")
         return redirect("account_login")
+
+class ConfirmEmailView(ConfirmEmailView):
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        self.object.confirm(self.request)
+        storage=get_messages(self.request)
+        for message in storage:
+            pass
+        messages.success(request, "Email has been confirmed successfully.")
+        return redirect("account_login")
+
+
+class CustomPasswordResetView(PasswordResetView):
+    template_name = "account/password_reset.html"
+    success_url = reverse_lazy('account_login')
+
+    def dispatch(self, request, *args, **kwargs):
+        # Remove any login requirement
+        if request.user.is_authenticated:
+            messages.info(request, "You are already logged in.")
+            return redirect(reverse_lazy('users:profile_view'))
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        email = form.cleaned_data["email"]
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            f"Password reset instructions have been sent to {email}."
+        )
+        return response
