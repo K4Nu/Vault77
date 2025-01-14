@@ -5,6 +5,8 @@ from django.contrib.auth.models import BaseUserManager
 import os
 from uuid import uuid4
 from allauth.account.models import EmailAddress
+from model_utils import FieldTracker
+
 
 class CustomUserManager(BaseUserManager):
     """
@@ -31,7 +33,7 @@ class CustomUserManager(BaseUserManager):
 
         user = self.create_user(email, password, **extra_fields)
         EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
-        Profile.objects.create(user=user)
+        # Remove Profile.objects.create() from here since signal will handle it
         return user
 
 
@@ -53,16 +55,17 @@ class Profile(models.Model):
     last_name = models.CharField(max_length=50, blank=True)
     phone_number = models.CharField(max_length=20, blank=True, null=True)
     newsletter = models.BooleanField(default=False)
-
+    tracker=FieldTracker(fields=['image'])
     def __str__(self):
         return f'{self.first_name or ""} {self.last_name or ""}'.strip()
 
     def save(self, *args, **kwargs):
         if self.image and not self.image.name.startswith("avatars/default"):
-            extension=os.path.splitext(self.image.name)[1].lower()
-            new_filename=f'{uuid4()}{extension}'
-            self.image.name=new_filename
-        super().save(*args,**kwargs)
+            if self._state.adding or self.tracker.has_changed('image'):
+                extension = os.path.splitext(self.image.name)[1].lower()
+                new_filename = f'{uuid4()}{extension}'
+                self.image.name = new_filename
+        super().save(*args, **kwargs)
 
 class Address(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='addresses')

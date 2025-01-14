@@ -19,20 +19,20 @@ from django.urls import path,include
 from django.conf import settings
 from django.conf.urls.static import static
 from users.views import CustomPasswordChangeView, CustomEmailView, CustomPasswordResetFromKeyDoneView, ConfirmEmailView, \
-    SignupView,CustomPasswordResetView
+    SignupView,CustomPasswordResetView,ResendVerificationEmail
 import debug_toolbar
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('user/', include('users.urls')),
     path("__reload__/", include("django_browser_reload.urls")),
-    path("accounts/email/",CustomEmailView.as_view(),name="account_email"),
+    path('accounts/email/', CustomEmailView.as_view(), name='account_email'),
     path("accounts/signup/",SignupView.as_view(),name="account_signup"),
+    path("accounts/resend-email-verification/", ResendVerificationEmail.as_view(), name="resend_email_verification"),
     path("accounts/password/reset/",CustomPasswordResetView.as_view(),name="account_reset_password"),
     path("accounts/confirm-email/<str:key>/", ConfirmEmailView.as_view(), name="account_confirm_email"),
     #path("accounts/password/reset/key/<str:uidb64>/<str:key>/",CustomPasswordResetFromKeyDoneView.as_view(),name="account_reset_password_from_key"),
     path("accounts/password/reset/key/done/",CustomPasswordResetFromKeyDoneView.as_view(),name="account_reset_password_from_key_done"),
     #path("accounts/confirm-email/",ConfirmEmailView.as_view(),name="account_confirm_email"),
-path("accounts/email/",CustomEmailView.as_view(),name="account_email"),
     path('accounts/password/change/', CustomPasswordChangeView.as_view(), name='account_change_password'),
     path('accounts/', include('allauth.urls')),
     path('__debug__/', include(debug_toolbar.urls)),

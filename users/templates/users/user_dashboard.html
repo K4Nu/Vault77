@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load widget_tweaks %}
+
+{% block content %}
+<div class="h-screen -mt-16">
+   <div class="container mx-auto p-6 pt-24 flex justify-center">
+       <div class="bg-white rounded-lg shadow-md p-8 w-full max-w-2xl">
+           <h1 class="text-2xl font-semibold mb-6">Account Settings</h1>
+
+           <!-- Three stacked divs with info and buttons -->
+           <div class="space-y-4">
+               <!-- Profile Information -->
+               <div class="w-full p-4 border rounded-lg hover:bg-gray-50">
+                   <div class="flex justify-between items-start">
+                       <div class="space-y-4 w-full">
+                           <div class="grid grid-cols-3 gap-4">
+                               <div class="text-gray-500">Full Name:</div>
+                               <div class="col-span-2">
+                                   {% if request.user.profile.first_name or request.user.profile.last_name %}
+                                       {{ request.user.profile.first_name }} {{ request.user.profile.last_name }}
+                                   {% else %}
+                                       Not set
+                                   {% endif %}
+                               </div>
+                           </div>
+                           <div class="grid grid-cols-3 gap-4">
+                               <div class="text-gray-500">Phone Number:</div>
+                               <div class="col-span-2">
+                                   {% if request.user.profile.phone_number %}
+                                       {{ request.user.profile.phone_number }}
+                                   {% else %}
+                                       Not set
+                                   {% endif %}
+                               </div>
+                           </div>
+                       </div>
+                       <button onclick="profile_modal.showModal()"
+                               class="btn btn-ghost text-primary ml-4">
+                           Edit
+                       </button>
+                   </div>
+               </div>
+
+               <!-- Email Information -->
+               <div class="w-full p-4 border rounded-lg hover:bg-gray-50">
+                   <div class="flex justify-between items-start">
+                       <div class="space-y-4 w-full">
+                           <div class="grid grid-cols-3 gap-4">
+                               <div class="text-gray-500">Email:</div>
+                               <div class="col-span-2">
+                                   {% if request.user.email %}
+                                       {{ request.user.email }}
+                                   {% else %}
+                                       Not set
+                                   {% endif %}
+                               </div>
+                           </div>
+                       </div>
+                       <button onclick="email_modal.showModal()"
+                               class="btn btn-ghost text-primary ml-4">
+                           Edit
+                       </button>
+                   </div>
+               </div>
+
+               <!-- Password section -->
+               <div class="w-full p-4 border rounded-lg hover:bg-gray-50">
+                   <div class="flex justify-between items-start">
+                       <div class="space-y-4 w-full">
+                           <div class="grid grid-cols-3 gap-4">
+                               <div class="text-gray-500">Password:</div>
+                               <div class="col-span-2">••••••••</div>
+                           </div>
+                       </div>
+                       <button onclick="password_modal.showModal()"
+                               class="btn btn-ghost text-primary ml-4">
+                           Edit
+                       </button>
+                   </div>
+               </div>
+           </div>
+
+
+    <div class="w-full p-4 border border-red-200 rounded-lg bg-red-50">
+        <div class="flex justify-between items-start">
+            <div class="space-y-2">
+                <div class="text-lg font-medium text-red-700">Delete Account</div>
+                <div class="text-sm text-red-600">
+                    Once you delete your account, there is no going back. Please be certain.
+                </div>
+            </div>
+            <button onclick="delete_modal.showModal()"
+                    class="btn btn-ghost text-red-600 hover:bg-red-100">
+                Delete Account
+            </button>
+        </div>
+    </div>
+</div>
+           <!-- Profile Modal -->
+           <dialog id="profile_modal" class="modal">
+               <div class="modal-box">
+                   <form method="dialog">
+                       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                   </form>
+
+                   <h3 class="text-lg font-bold mb-4">Update Profile</h3>
+                   <div id="profile-form-container">
+                       <form method="post" action="{% url 'users:update_profile' %}" enctype="multipart/form-data" class="space-y-4">
+                           {% csrf_token %}
+                           {% for field in profile_form %}
+                           <div class="form-control">
+                               <label class="label">
+                                   <span class="label-text">{{ field.label }}</span>
+                               </label>
+                               {% if field.name == 'image' %}
+                                   {% render_field field class="file-input file-input-bordered w-full" %}
+                               {% else %}
+                                   {% render_field field class="input input-bordered w-full" %}
+                               {% endif %}
+                               {% if field.help_text %}
+                               <label class="label">
+                                   <span class="label-text-alt">{{ field.help_text }}</span>
+                               </label>
+                               {% endif %}
+                               {% if field.errors %}
+                               <label class="label">
+                                   <span class="label-text-alt text-error">{{ field.errors.0 }}</span>
+                               </label>
+                               {% endif %}
+                           </div>
+                           {% endfor %}
+                           <div class="modal-action">
+                               <button type="submit" class="btn btn-primary">Save Changes</button>
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </dialog>
+
+           <!-- Email Modal -->
+           <dialog id="email_modal" class="modal">
+               <div class="modal-box">
+                   <form method="dialog">
+                       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                   </form>
+
+                   <h3 class="text-lg font-bold mb-4">Change Email</h3>
+                   <div id="email-form-container">
+                       <form method="post" action="{% url 'account_email' %}" class="space-y-4">
+                           {% csrf_token %}
+                           {% for field in email_form %}
+                           <div class="form-control">
+                               <label class="label">
+                                   <span class="label-text">{{ field.label }}</span>
+                               </label>
+                               {% render_field field class="input input-bordered w-full" %}
+                               {% if field.help_text %}
+                               <label class="label">
+                                   <span class="label-text-alt">{{ field.help_text }}</span>
+                               </label>
+                               {% endif %}
+                               {% if field.errors %}
+                               <label class="label">
+                                   <span class="label-text-alt text-error">{{ field.errors.0 }}</span>
+                               </label>
+                               {% endif %}
+                           </div>
+                           {% endfor %}
+                           <div class="modal-action">
+                               <button type="submit" class="btn btn-primary">Update Email</button>
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </dialog>
+
+           <!-- Password Modal -->
+           <dialog id="password_modal" class="modal">
+               <div class="modal-box">
+                   <form method="dialog">
+                       <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+                   </form>
+
+                   <h3 class="text-lg font-bold mb-4">Change Password</h3>
+                   <div id="password-form-container">
+                       <form method="post" action="{% url 'account_change_password' %}" class="space-y-4">
+                           {% csrf_token %}
+                           {% for field in password_form %}
+                           <div class="form-control">
+                               <label class="label">
+                                   <span class="label-text">{{ field.label }}</span>
+                               </label>
+                               {% render_field field class="input input-bordered w-full" %}
+                               {% if field.help_text %}
+                               <label class="label">
+                                   <span class="label-text-alt">{{ field.help_text }}</span>
+                               </label>
+                               {% endif %}
+                               {% if field.errors %}
+                               <label class="label">
+                                   <span class="label-text-alt text-error">{{ field.errors.0 }}</span>
+                               </label>
+                               {% endif %}
+                           </div>
+                           {% endfor %}
+                           <div class="modal-action">
+                               <button type="submit" class="btn btn-primary">Change Password</button>
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </dialog>
+   <dialog id="delete_modal" class="modal">
+    <div class="modal-box">
+        <form method="dialog">
+            <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+        </form>
+
+        <h3 class="text-lg font-bold mb-4 text-red-600">Delete Account</h3>
+        <div class="text-gray-600 mb-6">
+            <p>Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.</p>
+        </div>
+        <div class="modal-action flex justify-between">
+            <form method="dialog">
+                <button class="btn btn-ghost">Cancel</button>
+            </form>
+            <form method="post" action="{% url 'users:delete_account' %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-error">
+                    Yes, Delete My Account
+                </button>
+            </form>
+        </div>
+    </div>
+</dialog>
+       </div>
+   </div>
+</div>
+
+<script>
+    document.addEventListener('htmx:afterRequest', function(e) {
+        const modals = ['password_modal', 'email_modal', 'profile_modal', 'delete_modal'];
+        modals.forEach(modalId => {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.close();
+            }
+        });
+    });
+</script>
+{% endblock %}
