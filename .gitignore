@@ -3,3 +3,5 @@ db.sqlite3
 .env
 .venv
 .idea
+echo "__pycache__/" >> .gitignore
+echo "*.pyc" >> .gitignore
