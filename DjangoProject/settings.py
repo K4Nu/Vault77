@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "products",
     "django_htmx",
     'widget_tweaks',
+    'model_utils',
     'debug_toolbar',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -148,7 +149,8 @@ AUTHENTICATION_BACKENDS = [
 AUTH_USER_MODEL = "users.CustomUser"
 ACCOUNT_FORMS = {'signup': 'users.forms.MyCustomSignupForm',
                  'reset_password':"users.forms.MyCustomResetPasswordForm",
-                 "set_password":"users.forms.CustomSetPasswordForm",}
+                 "set_password":"users.forms.CustomSetPasswordForm",
+                 "add_email":"users.forms.MyCustomAddEmailForm",}
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "static",]
@@ -174,7 +176,8 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 ACCOUNT_LOGOUT_ON_GET=True
 
-ALLOWED_IMAGE_FILETYPES=[config("ALLOWED_IMAGE_FILETYPES")]
+
+ALLOWED_IMAGE_FILETYPES = tuple(ext.lower().strip().strip("'").strip('"') for ext in config("ALLOWED_IMAGE_FILETYPES").split(','))
 MAX_IMAGE_SIZE=eval(config("MAX_IMAGE_SIZE"))
 SOCIALACCOUNT_LOGIN_ON_GET=True
 
@@ -190,3 +193,5 @@ SOCIALACCOUNT_PROVIDERS = {
         }
     }
 }
+
+ACCOUNT_EMAIL_CONFIRMATION_SENT_MESSAGE="Registration successful! Please check your email to verify your account."
