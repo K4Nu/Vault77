@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <h2>{{ title }}</h2>
+    
+    {% for main_category, subcategories in categories.items %}
+        <div class="category-section">
+            <h3>{{ main_category.name }}</h3>
+            <div class="subcategories">
+                {% for subcategory in subcategories %}
+                    <div class="category-item">
+                        <h4>{{ subcategory.name }}</h4>
+                        <!-- Add edit/delete buttons if user is staff -->
+                        {% if user.is_staff %}
+                            <a href="{% url 'products:edit-category' subcategory.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                            <a href="{% url 'products:delete-category' subcategory.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                
+                <!-- Add new subcategory button if user is staff -->
+                {% if user.is_staff %}
+                    <a href="{% url 'products:create-category' %}?parent={{ main_category.pk }}" class="btn btn-success">
+                        Add to {{ main_category.name }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

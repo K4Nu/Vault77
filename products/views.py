@@ -1,19 +1,12 @@
-from urllib import request
 from django.shortcuts import render, redirect
-from django.views.generic import CreateView
-from django.contrib import messages
-from .forms import CategoryForm
-from .models import Product,Category,ProductImage
-
-from django.shortcuts import render, redirect
-from django.views.generic import CreateView
+from django.views.generic import CreateView, ListView
 from django.contrib import messages
 from django.contrib.auth.mixins import UserPassesTestMixin
 from .forms import CategoryForm
 from .models import Product, Category, ProductImage
 
 
-class CategoryCreateView(UserPassesTestMixin, CreateView):
+class CreateCategoryView(UserPassesTestMixin, CreateView):
     model = Category  # Remove quotes, it should be the actual model class
     template_name = 'products/category_form.html'
     form_class = CategoryForm
@@ -43,3 +36,26 @@ class CategoryCreateView(UserPassesTestMixin, CreateView):
     def form_invalid(self, form):
         messages.error(self.request, 'Error creating category. Please check the form.')
         return super().form_invalid(form)
+
+
+class CategoryListView(ListView):
+    model = Category
+    template_name = 'products/category_list.html'
+    context_object_name = 'categories'
+
+    def get_queryset(self):
+        # Get main categories (Men, Women, Kids) first
+        main_categories = Category.objects.filter(parent=None, is_gender_category=True)
+
+        # For each main category, we'll get its subcategories
+        categories_dict = {}
+        for main_cat in main_categories:
+            subcategories = Category.objects.filter(parent=main_cat)
+            categories_dict[main_cat] = subcategories
+
+        return categories_dict
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Categories'
+        return context
