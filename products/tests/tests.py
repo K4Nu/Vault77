@@ -33,3 +33,4 @@ class TestCategoryModel:
         assert child not in qs, "Child category should not be returned by the custom manager."
         # Ensure that exactly one category is returned.
         assert qs.count() == 1
+

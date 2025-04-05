@@ -56,3 +56,26 @@ class Category(MPTTModel):
     def get_absolute_url(self):
         return reverse('category_detail', kwargs={'slug': self.slug})
     """
+
+class SizeGroup(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=255)
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.CASCADE,
+        related_name='size_groups'
+    )
+
+    class Meta:
+        unique_together = ('category', 'slug')
+        ordering = ['name']
+        verbose_name = 'Size Group'
+        verbose_name_plural = 'Size Groups'
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        # Always generate slug from the name
+        self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
