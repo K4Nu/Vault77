@@ -79,3 +79,31 @@ class SizeGroup(models.Model):
         # Always generate slug from the name
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+class Size(models.Model):
+    name = models.CharField(max_length=100)
+    size_group = models.ForeignKey(
+        SizeGroup,
+        on_delete=models.CASCADE,
+        related_name='sizes'
+    )
+    order = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        unique_together = ('size_group', 'name')
+        ordering = ['order']
+        verbose_name = 'Size'
+        verbose_name_plural = 'Sizes'
+        indexes = [
+            models.Index(fields=('size_group', 'name'), name='size_group_size_group_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.size_group.name} - {self.name}"
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            # Set the order to the number of sizes already in the group
+            count = Size.objects.filter(size_group=self.size_group).count()
+            self.order = count
+        super().save(*args, **kwargs)
