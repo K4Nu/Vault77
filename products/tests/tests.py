@@ -1,5 +1,5 @@
 import pytest
-from products.models import Gender,Category,SizeGroup
+from products.models import Gender,Category,SizeGroup,Size
 
 @pytest.fixture
 def men(db):
@@ -52,3 +52,12 @@ class TestSizeGroupModel:
     def test_slug(self, category):
         size_group = SizeGroup.objects.create(name='Adults Normal', category=category)
         assert size_group.slug == 'adults-normal'
+
+@pytest.mark.django_db
+class TestSizeModel:
+    def test_str_method(self, size_group):
+        size = Size.objects.create(name='XL', size_group=size_group)
+        # The __str__ method returns: size_group.name + ' - ' + size.name
+        expected_str = f"{size_group.name} - {size.name}"
+        assert str(size) == expected_str
+
