@@ -127,10 +127,14 @@ class Product(models.Model):
         return f'{self.category.name} - {self.name}'
 
     def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
+        self.slug = slugify(self.name)
         super().save(*args, **kwargs)
     """
     def get_absolute_url(self):
         return reverse('product_detail', kwargs={'slug': self.slug})
     """
+
+class Color(models.Model):
+    name=models.CharField(max_length=100)
+
+class
