@@ -1,9 +1,18 @@
 import pytest
-from products.models import Gender,Category
+from products.models import Gender,Category,SizeGroup
 
 @pytest.fixture
 def men(db):
     return Gender.objects.create(gender_name='Men')
+
+@pytest.fixture
+def category(db):
+    # Using a separate Gender instance here; adjust as needed.
+    return Category.objects.create(name='Test', gender=Gender.objects.create(gender_name='Temp'))
+
+@pytest.fixture
+def size_group(db, category):
+    return SizeGroup.objects.create(name='Test', category=category)
 
 @pytest.mark.django_db
 class TestGenderModel:
@@ -34,3 +43,12 @@ class TestCategoryModel:
         # Ensure that exactly one category is returned.
         assert qs.count() == 1
 
+@pytest.mark.django_db
+class TestSizeGroupModel:
+    def test_str_method(self, men, category):
+        size_group = SizeGroup.objects.create(name='Adults Normal', category=category)
+        assert str(size_group) == 'Adults Normal'
+
+    def test_slug(self, category):
+        size_group = SizeGroup.objects.create(name='Adults Normal', category=category)
+        assert size_group.slug == 'adults-normal'
