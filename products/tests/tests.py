@@ -1,5 +1,5 @@
 import pytest
-from products.models import Gender,Category,SizeGroup,Size
+from products.models import Gender,Category,SizeGroup,Size,Product,ProductItem,Color
 
 @pytest.fixture
 def men(db):
@@ -13,6 +13,14 @@ def category(db):
 @pytest.fixture
 def size_group(db, category):
     return SizeGroup.objects.create(name='Test', category=category)
+
+@pytest.fixture
+def color(db):
+    return Color.objects.create(name='Red')
+
+@pytest.fixture
+def product(db, category):
+    return Product.objects.create(name='Test', category=category)
 
 @pytest.mark.django_db
 class TestGenderModel:
@@ -61,3 +69,16 @@ class TestSizeModel:
         expected_str = f"{size_group.name} - {size.name}"
         assert str(size) == expected_str
 
+@pytest.mark.django_db
+class TestProductModel:
+    def test_str_method(self,category):
+        product=Product.objects.create(name='Test', category=category)
+        assert str(product) == f'{category} - Test'
+
+@pytest.mark.django_db
+class TestProductItemModel:
+    def test_str_method(self, product, color):
+        item=ProductItem.objects.create(name='Test',product=product, color=color, product_code="#123")
+        assert str(item) == "Test - #123"
+
+        assert item.slug == "123"
