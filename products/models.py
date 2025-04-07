@@ -144,6 +144,8 @@ class ProductItem(models.Model):
     slug = models.SlugField(max_length=255, unique=True)
     color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name='products')
     product_code = models.CharField(max_length=100)
+    price=models.DecimalField(max_digits=10, decimal_places=2)
+
 
     class Meta:
         ordering = ['name']
@@ -170,7 +172,6 @@ class ProductImage(models.Model):
     filename = models.ImageField(upload_to='products_images/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    price=models.DecimalField(max_digits=10, decimal_places=2)
     class Meta:
         ordering = ['name']  # or ['order'] if that better suits your needs
         verbose_name = 'Product Image'

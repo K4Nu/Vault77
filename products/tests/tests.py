@@ -1,5 +1,5 @@
 import pytest
-from products.models import Gender,Category,SizeGroup,Size,Product,ProductItem,Color
+from products.models import Gender,Category,SizeGroup,Size,Product,ProductItem,Color,ProductImage,ProductVariant
 
 @pytest.fixture
 def men(db):
@@ -15,12 +15,21 @@ def size_group(db, category):
     return SizeGroup.objects.create(name='Test', category=category)
 
 @pytest.fixture
+def size(db,size_group):
+    return Size.objects.create(name='XL', size_group=size_group)
+
+@pytest.fixture
 def color(db):
     return Color.objects.create(name='Red')
 
 @pytest.fixture
 def product(db, category):
     return Product.objects.create(name='Test', category=category)
+
+@pytest.fixture
+def productitem(db,product, color):
+    return ProductItem.objects.create(name='Test',product=product, color=color,product_code="#123",price=15.99)
+
 
 @pytest.mark.django_db
 class TestGenderModel:
@@ -78,7 +87,20 @@ class TestProductModel:
 @pytest.mark.django_db
 class TestProductItemModel:
     def test_str_method(self, product, color):
-        item=ProductItem.objects.create(name='Test',product=product, color=color, product_code="#123")
+        item=ProductItem.objects.create(name='Test',product=product, color=color, product_code="#123",price=12.99)
         assert str(item) == "Test - #123"
 
         assert item.slug == "123"
+
+
+@pytest.mark.django_db
+class TestProductImageModel:
+    def test_str_method(self, productitem):
+        product_image=ProductImage.objects.create(name='Test', item=productitem)
+        assert str(product_image) == "#123 - Test"
+
+@pytest.mark.django_db
+class TestProductVariantModel:
+    def test_str_method(self, productitem, size):
+        variant = ProductVariant.objects.create(product_item=productitem, size=size)
+        assert str(variant) == "Test - XL"
