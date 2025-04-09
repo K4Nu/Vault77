@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'silk',
+    'import_export',
     'products',
     ]
 
