@@ -3,16 +3,12 @@ from django.utils.text import slugify
 from mptt.models import MPTTModel, TreeForeignKey
 from mptt.managers import TreeManager
 from django.urls import reverse
-
-class Gender(models.Model):
-    name= models.CharField(max_length=100,unique=True)
-    def __str__(self):
-        return self.name
+import os
+import uuid
 
 class CategoryManager(TreeManager):
     def get_queryset(self):
         return super().get_queryset().filter(parent=None)
-
 
 class SizeGroup(models.Model):
     name = models.CharField(max_length=100)
@@ -41,16 +37,13 @@ class Category(MPTTModel):
         related_name='children',
         db_index=True
     )
-    gender = models.ForeignKey(
-        Gender,
-        on_delete=models.CASCADE,
-        related_name='categories'  # Unique related name for gender field
-    )
     slug = models.SlugField(max_length=255, unique=True)
     size_group = models.ForeignKey(
         SizeGroup,
         on_delete=models.CASCADE,
-        related_name='size_group_categories'  # Unique related name for size_group field
+        related_name='size_group_categories',
+        null=True,
+        blank=True,
     )
     objects = TreeManager()
     all_objects = CategoryManager()
@@ -76,7 +69,7 @@ class Category(MPTTModel):
 
         # Compute the slug based on gender and ancestors
         ancestors = self.get_ancestors(include_self=True)
-        path = str(self.gender) + "-" + '-'.join([p.name for p in ancestors])
+        path = '-'.join([p.name for p in ancestors])
         new_slug = slugify(path)
 
         if self.slug != new_slug:
@@ -145,19 +138,21 @@ class Product(models.Model):
 
 class Color(models.Model):
     name=models.CharField(max_length=100)
+    hex_code=models.CharField(max_length=6,default="FFFFFF")
+
+    def __str__(self):
+        return self.name+" ("+self.hex_code+")"
 
 
 class ProductItem(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='items')
-    name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=255, unique=True)
     color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name='products')
     product_code = models.CharField(max_length=100)
-    price=models.DecimalField(max_digits=10, decimal_places=2)
-
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
     class Meta:
-        ordering = ['name']
+        ordering = ['product__name']
         verbose_name = 'Product Item'
         verbose_name_plural = 'Product Items'
         unique_together = (('product', 'product_code'),)
@@ -167,10 +162,21 @@ class ProductItem(models.Model):
         ]
 
     def __str__(self):
-        return f'{self.product.name} - {self.product_code}'
+        return f'{self.product.name} - {self.color} - {self.product_code}'
 
     def save(self, *args, **kwargs):
-        self.slug = slugify(self.product_code)
+        # Only generate a new product_code if this is a new instance
+        if not self.pk:
+            self.product_code = uuid.uuid4().hex[:8]
+        # Now compute the slug based on the product_code
+        base = slugify(f"{self.product.name}-{self.color.name}-{self.product_code}")
+
+        # Count existing slugs that start with base (exact or with suffix “-n”)
+        existing_count = ProductItem.objects.filter(
+            slug__regex=rf'^{base}(-\d+)?$'
+        ).count()
+        self.slug = base if existing_count == 0 else f"{base}-{existing_count + 1}"
+
         super().save(*args, **kwargs)
 
 class ProductImage(models.Model):
@@ -182,7 +188,7 @@ class ProductImage(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     class Meta:
-        ordering = ['name']  # or ['order'] if that better suits your needs
+        ordering = ['order']  # or ['order'] if that better suits your needs
         verbose_name = 'Product Image'
         verbose_name_plural = 'Product Images'
         indexes = [
@@ -193,7 +199,21 @@ class ProductImage(models.Model):
         return f'{self.item.product_code} - {self.name}'
 
     def save(self, *args, **kwargs):
+        base_name = self.item.product.name
+        unique_suffix = uuid.uuid4().hex[:6]
+        self.name = f"{base_name}-{unique_suffix}"
         self.slug = slugify(self.name)
+
+        #order
+        if self.pk is None:
+            self.order = ProductImage.objects.filter(item=self.item).count()
+
+        #filename name
+        if self.filename:
+            original_ext = os.path.splitext(self.filename.name)[1]
+            new_filename = f"{self.name}{original_ext}"
+            self.filename.name = f'products_images/{new_filename}'  # Reassign path
+
         super().save(*args, **kwargs)
 
 class ProductVariant(models.Model):
@@ -207,5 +227,5 @@ class ProductVariant(models.Model):
         verbose_name_plural = 'Product Variants'
 
     def __str__(self):
-        return f'{self.product_item.name} - {self.size.name}'
+        return f'{self.product_item.product.name} - {self.size.name}'
 
