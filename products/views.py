@@ -1,10 +1,10 @@
 from django.db.models import OuterRef, Subquery, Prefetch
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework import permissions, filters, generics
+from rest_framework import permissions, filters
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+
 from products.models import ProductItem, ProductVariant, ProductImage
-from products.serializers import ProductItemSerializer,SimpleProductItemSerializer
+from products.serializers import ProductItemSerializer
 
 # Subquery to grab each item's first-ordered image filename
 first_image_qs = (
@@ -24,8 +24,6 @@ related_items_qs = (
         Prefetch('images', queryset=ProductImage.objects.order_by('order'))
     )
 )
-
-last_image_qs = (ProductImage.objects.filter(item=OuterRef('pk')).order_by('-order').values('filename')[:1])
 
 class ProductItemViewSet(ReadOnlyModelViewSet):
     """
@@ -64,3 +62,6 @@ class ProductItemViewSet(ReadOnlyModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
 
+class DetailProductItemViewSet(ReadOnlyModelViewSet):
+    queryset = ()
+    serializer_class = ProductItemSerializer

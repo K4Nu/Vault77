@@ -87,11 +87,18 @@ class ProductItemSerializer(serializers.ModelSerializer):
         related = [item for item in prefetched if item.pk != obj.pk]
         return SimpleProductItemSerializer(related, many=True, context=self.context).data
 
-class VariantProductItem(serializers.ModelSerializer):
-    last_image=serializers.SerializerMethodField()
+
+class MinimalProductItem(serializers.ModelSerializer):
     color = ColorSerializer(read_only=True)
+    image = ProductImageSerializer(read_only=True)
 
     class Meta:
         model = ProductItem
+        fields = ('color', 'image')
 
-    def get_last_image(self, obj):
+
+class DetailProductItemSerializer(serializers.ModelSerializer):
+    variant = ProductVariantSerializer(read_only=True)
+
+    class Meta:
+        model = ProductItem
