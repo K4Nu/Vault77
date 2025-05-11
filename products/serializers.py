@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
 
-from products.models import ProductItem, ProductImage, Color
+from products.models import ProductItem, ProductImage, Color,Category
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
@@ -53,3 +53,26 @@ class ProductItemSerializer(serializers.ModelSerializer):
         """
         imgs = getattr(obj, 'all_images', [])[:2]
         return ProductItemImageSerializer(imgs, many=True, context=self.context).data
+
+class CategorySerializer(serializers.ModelSerializer):
+    children = SerializerMethodField()
+    items    = SerializerMethodField()
+
+    class Meta:
+        model  = Category
+        fields = ('id', 'name', 'slug', 'children', 'items')
+
+    def get_children(self, obj):
+        return CategorySerializer(
+            obj.children.all(),
+            many=True,
+            context=self.context
+        ).data
+
+    def get_items(self, obj):
+        flat = []
+        for product in obj.products.all():
+            # now this list has items *with* .all_images on them
+            for item in getattr(product, 'related_items', []):
+                flat.append(item)
+        return ProductItemSerializer(flat, many=True, context=self.context).data
