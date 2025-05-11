@@ -1,104 +1,55 @@
 from rest_framework import serializers
-from products.models import (
-    ProductItem, Size, ProductVariant, ProductImage, Color
-)
-from django.core.files.storage import default_storage
+from rest_framework.fields import SerializerMethodField
 
-class SizeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Size
-        fields = ("name",)
-
-
-class ProductVariantSerializer(serializers.ModelSerializer):
-    size = SizeSerializer(read_only=True)
-
-    class Meta:
-        model = ProductVariant
-        fields = ("size", "quantity",)
-
+from products.models import ProductItem, ProductImage, Color
 
 class ColorSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Color
-        fields = ("name", "hex_code")
+        model  = Color
+        fields = ('id', 'name', 'hex_code')
 
+class ProductItemImageSerializer(serializers.ModelSerializer):
+    url = SerializerMethodField()
 
-class SimpleProductItemSerializer(serializers.ModelSerializer):
-    product_name = serializers.CharField(source='product.name', read_only=True)
-    image        = serializers.SerializerMethodField()
-    color        = ColorSerializer(read_only=True)
     class Meta:
-        model  = ProductItem
-        fields = (
-            'product_name',
-            'color',
-            'price',
-            'product_code',
-            'slug',
-            'image',
-        )
+        model  = ProductImage
+        fields = ('url',)
 
-    def get_image(self, obj):
-        # `first_image_url` is the annotation holding e.g. 'products_images/abc.jpg'
-        path = getattr(obj, 'first_image_url', None)
-        if not path:
-            return None
-
-        # Use default_storage.url() to get the proper MEDIA_URL-prefixed path
-        relative_url = default_storage.url(path)  # e.g. '/media/products_images/abc.jpg'
-
-        # If we have a request, build absolute URI; otherwise return the relative URL
+    def get_url(self, obj):
         request = self.context.get('request')
-        if request:
-            return request.build_absolute_uri(relative_url)
-        return relative_url
-
-
-class ProductImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProductImage
-        fields = ('filename', 'order')
-
+        return request.build_absolute_uri(obj.filename.url)
 
 class ProductItemSerializer(serializers.ModelSerializer):
-    product_name   = serializers.CharField(source='product.name', read_only=True)
-    color          = ColorSerializer(read_only=True)
-    variants       = ProductVariantSerializer(many=True, read_only=True)
-    images         = ProductImageSerializer(many=True, read_only=True)
-    related_items  = serializers.SerializerMethodField()
+    product_name = serializers.CharField(source='product.name', read_only=True)
+    colors       = SerializerMethodField()
+    images       = SerializerMethodField()
 
     class Meta:
         model  = ProductItem
-        fields = (
-            'product_name',
-            'color',
-            'price',
-            'product_code',
-            'slug',
-            'variants',
-            'related_items',
-            'images',
-        )
+        fields = ("product_name", "slug", "price", "colors", "images")
 
-    def get_related_items(self, obj):
-        # uses the `to_attr='prefetched_related_items'` you defined in the view’s Prefetch
-        prefetched = getattr(obj.product, 'prefetched_related_items', [])
-        related = [item for item in prefetched if item.pk != obj.pk]
-        return SimpleProductItemSerializer(related, many=True, context=self.context).data
+    def get_colors(self, obj):
+        """
+        Start with the current item's color, then append each sibling's
+        color (no duplicates), in the order they were prefetched.
+        """
+        siblings   = getattr(obj.product, 'all_items', [])
+        curr_color = obj.color
 
+        seen = {}
+        if curr_color:
+            seen[curr_color.id] = curr_color
 
-class MinimalProductItem(serializers.ModelSerializer):
-    color = ColorSerializer(read_only=True)
-    image = ProductImageSerializer(read_only=True)
+        for item in siblings:
+            color = item.color
+            if color and color.id not in seen:
+                seen[color.id] = color
 
-    class Meta:
-        model = ProductItem
-        fields = ('color', 'image')
+        return ColorSerializer(list(seen.values()), many=True, context=self.context).data
 
-
-class DetailProductItemSerializer(serializers.ModelSerializer):
-    variant = ProductVariantSerializer(read_only=True)
-
-    class Meta:
-        model = ProductItem
+    def get_images(self, obj):
+        """
+        Return up to the first two images from the prefetched all_images.
+        """
+        imgs = getattr(obj, 'all_images', [])[:2]
+        return ProductItemImageSerializer(imgs, many=True, context=self.context).data

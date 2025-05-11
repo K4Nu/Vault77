@@ -23,12 +23,11 @@ from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
 from products import views as product_views
 
-router = DefaultRouter()
-router.register(r'products', ProductItemViewSet)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("silk/",include("silk.urls")),
-    path("api/", include(router.urls)),
+    path("api/items", ProductItemViewSet.as_view({'get': 'list'})),
 
 ]+ debug_toolbar_urls()
 if settings.DEBUG:
