@@ -17,18 +17,18 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from products.views import ProductItemViewSet
+from products.views import ProductItemViewSet,CategoryViewSet
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
 from products import views as product_views
-
-router = DefaultRouter()
-router.register(r'products', ProductItemViewSet)
+router=DefaultRouter()
+router.register(r'categories', CategoryViewSet)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("silk/",include("silk.urls")),
-    path("api/", include(router.urls)),
+    path("api/items", ProductItemViewSet.as_view({'get': 'list'})),
+    path("api/",include(router.urls)),
 
 ]+ debug_toolbar_urls()
 if settings.DEBUG:
