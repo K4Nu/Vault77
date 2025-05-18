@@ -1,9 +1,8 @@
 from django.db.models import Prefetch
-from rest_framework import viewsets
-
-from .models import ProductItem, ProductImage, Category
-from .serializers import ProductItemSerializer, CategorySerializer
-
+from rest_framework import viewsets,serializers
+from .models import ProductItem, ProductImage, Category,ProductVariant
+from .serializers import ProductItemSerializer, CategoryProductItemSerializer,CategorySerializer
+from rest_framework.serializers import SerializerMethodField
 class ProductItemViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Each ProductItem is serialized with:
@@ -16,6 +15,8 @@ class ProductItemViewSet(viewsets.ReadOnlyModelViewSet):
             queryset=ProductItem.objects.select_related('color'),
             to_attr="all_items"
         ),
+        Prefetch("variants",
+                 queryset=ProductVariant.objects.select_related("size").order_by('size__order'),to_attr="all_variants"),
         Prefetch(
             "images",
             queryset=ProductImage.objects.order_by("order"),
@@ -23,16 +24,11 @@ class ProductItemViewSet(viewsets.ReadOnlyModelViewSet):
         ),
     )
     serializer_class = ProductItemSerializer
-
+    lookup_field = 'slug'
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """
-    Each Category is serialized with:
-      - children
-      - products
-      - products__items → all_items  (so every ProductItem under a category
-        has .product.all_items populated for get_colors())
-      - images on those items → all_images
+    Returns categories with their children and all associated product items.
     """
     queryset = Category.objects.prefetch_related(
         "children",
@@ -45,7 +41,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
                     Prefetch(
                         "images",
                         queryset=ProductImage.objects.order_by("order"),
-                        to_attr="all_images"
+                        to_attr="all_cat_images"
                     )
                 ),
             to_attr="all_items"
