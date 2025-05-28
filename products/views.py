@@ -1,16 +1,23 @@
 from django.db.models import Prefetch
-from rest_framework import viewsets,serializers
+from rest_framework import viewsets, serializers, permissions
+from rest_framework.permissions import AllowAny
 from .models import ProductItem, ProductImage, Category,ProductVariant
 from .serializers import ProductItemSerializer, CategoryProductItemSerializer,CategorySerializer
-from rest_framework.serializers import SerializerMethodField
 from django_elasticsearch_dsl_drf.filter_backends import (
     FilteringFilterBackend,
     SearchFilterBackend,
     OrderingFilterBackend,
 )
 from django_elasticsearch_dsl_drf.viewsets import DocumentViewSet
-from .documents import ProductItemDocument
 from .serializers import ProductItemSearchSerializer
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from elasticsearch_dsl import Search
+from elasticsearch_dsl.query import Q
+from django_elasticsearch_dsl.documents import Document
+from elasticsearch_dsl.connections import connections
+from .documents import ProductItemDocument
+
 
 class ProductItemViewSet(viewsets.ReadOnlyModelViewSet):
     """
@@ -97,3 +104,30 @@ class ProductItemSearchView(DocumentViewSet):
     }
 
     lookup_field = 'slug'
+
+class ProductItemSuggestView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get("q", "")
+        suggestions = []
+
+        if q:
+            s = ProductItemDocument.search()
+            s = s.suggest(
+                "product-suggest",
+                q,
+                completion={"field": "product_name_suggest", "size": 10}  # allow more to deduplicate
+            )
+            response = s.execute()
+            seen = set()
+
+            for option in response.suggest["product-suggest"][0]["options"]:
+                text = option["text"]
+                if text not in seen:
+                    seen.add(text)
+                    suggestions.append(text)
+                if len(suggestions) >= 5:
+                    break
+
+        return Response(suggestions)
