@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from products.views import ProductItemViewSet,CategoryViewSet
+from products.views import ProductItemViewSet,CategoryViewSet,ProductItemSearchView
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
@@ -25,6 +25,7 @@ from products import views as product_views
 router=DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
 router.register(r'products', ProductItemViewSet, basename='product')
+router.register(r'search/product-items', ProductItemSearchView, basename='productitem-search')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("silk/",include("silk.urls")),

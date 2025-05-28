@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_elasticsearch_dsl',
+    'django_elasticsearch_dsl_drf',
     'corsheaders',
     'django_extensions',
     'silk',
@@ -147,7 +149,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+ELASTICSEARCH_DSL = {
+    'default': {
+        'hosts': os.getenv('ELASTICSEARCH_HOST', 'http://localhost:9200')
+    }
+}
 
 
 REST_FRAMEWORK = {

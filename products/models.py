@@ -161,6 +161,14 @@ class ProductItem(models.Model):
             models.Index(fields=['color'], name='productitem_color_idx'),
         ]
 
+    @property
+    def product_name(self):
+        return self.product.name
+
+    @property
+    def product_description(self):
+        return self.product.description
+
     def __str__(self):
         return f'{self.product.name} - {self.color} - {self.product_code}'
 
