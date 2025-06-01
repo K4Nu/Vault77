@@ -17,7 +17,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from products.views import ProductItemViewSet,CategoryViewSet,ProductItemSearchView,ProductItemSuggestView
+from products.views import ProductItemViewSet,CategoryViewSet,ProductItemSearchView,ProductItemSuggestView,FullProductItemSearchView
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
@@ -31,6 +31,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("silk/", include("silk.urls")),
     path("api/suggest/product-items/", ProductItemSuggestView.as_view(), name="productitem-suggest"),
+    path("api/full-search/",FullProductItemSearchView.as_view(), name="full-product-search"),
     path("api/", include(router.urls)),
 ]+ debug_toolbar_urls()
 if settings.DEBUG:
