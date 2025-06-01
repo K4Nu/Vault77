@@ -131,3 +131,32 @@ class ProductItemSuggestView(APIView):
                     break
 
         return Response(suggestions)
+
+class FullProductItemSearchView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        query = request.GET.get("q", "")
+        if not query:
+            return Response([])
+
+        # 1. Search in Elasticsearch
+        s = ProductItemDocument.search()
+        s = s.query("multi_match", query=query, fields=["product_name", "product_description"])
+        results = s.execute()
+        print("Elasticsearch hits:", [hit.slug for hit in results])
+        # 2. Get slugs from ES
+        slugs = [hit.slug for hit in results]
+
+        # 3. Fetch matching ORM objects using prefetch
+        items = ProductItem.objects.select_related("color").prefetch_related(
+            Prefetch(
+                "images",
+                queryset=ProductImage.objects.order_by("order"),
+                to_attr="all_cat_images"
+            )
+        ).filter(slug__in=slugs)
+
+        # 4. Serialize using your rich CategoryProductItemSerializer
+        serializer = CategoryProductItemSerializer(items, many=True, context={"request": request})
+        return Response(serializer.data)

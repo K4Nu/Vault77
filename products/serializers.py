@@ -195,3 +195,5 @@ class ProductItemSearchSerializer(DocumentSerializer):
     class Meta:
         document = ProductItemDocument
         fields = ("product_name", "product_description", "slug", "price")
+
+

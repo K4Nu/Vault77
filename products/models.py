@@ -146,6 +146,7 @@ class Color(models.Model):
 
 class ProductItem(models.Model):
     product = models.ForeignKey('Product', on_delete=models.CASCADE, related_name='items')
+    name=models.CharField(max_length=128,unique=False, null=False,blank=False)
     slug = models.SlugField(max_length=255, unique=True)
     color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name='products')
     product_code = models.CharField(max_length=100)
@@ -160,10 +161,6 @@ class ProductItem(models.Model):
             models.Index(fields=['product', 'product_code'], name='product_product_code_idx'),
             models.Index(fields=['color'], name='productitem_color_idx'),
         ]
-
-    @property
-    def product_name(self):
-        return self.product.name
 
     @property
     def product_description(self):
