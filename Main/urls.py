@@ -21,6 +21,11 @@ from products.views import ProductItemViewSet,CategoryViewSet,ProductItemSearchV
 from django.conf import settings
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 from products import views as product_views
 router=DefaultRouter()
 router.register(r'categories', CategoryViewSet, basename='category')
@@ -30,6 +35,11 @@ router.register(r'search/product-items', ProductItemSearchView, basename='produc
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("silk/", include("silk.urls")),
+    path("auth/", include("dj_rest_auth.urls")),
+    path("auth/register", include("dj_rest_auth.registration.urls")),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
     path("api/suggest/product-items/", ProductItemSuggestView.as_view(), name="productitem-suggest"),
     path("api/full-search/",FullProductItemSearchView.as_view(), name="full-product-search"),
     path("api/", include(router.urls)),

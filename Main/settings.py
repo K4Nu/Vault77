@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 from dotenv import load_dotenv
@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'dj_rest_auth',
     'allauth',
+    'drf_spectacular',
     'allauth.account',
     'allauth.socialaccount',
     'dj_rest_auth.registration',
@@ -78,7 +79,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'allauth.account.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware'
 ]
 
 ROOT_URLCONF = 'Main.urls'
@@ -173,7 +174,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
-    ]
+    ],
+'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
@@ -187,3 +189,15 @@ AUTHENTICATION_BACKENDS = (
 )
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+REST_AUTH={
+    "USE_JWT": True,
+    "JWT_AUTH_HTTPONLY":False,
+    "JWT_AUTH_COOKIE":"Main-auth",
+    "JWT_AUTH_REFRESH_COOKIE":"Main-refresh-token",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME":timedelta(minutes=5),
+    "REFRESH_TOKEN_LIFETIME":timedelta(days=1),
+}
