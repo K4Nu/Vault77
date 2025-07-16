@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'import_export',
     'django_filters',
     'products',
+    'users',
     'debug_toolbar',
 
     ]
@@ -176,12 +177,24 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
     ],
 'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
 
-ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None  # Disable username field in user model
+ACCOUNT_USERNAME_REQUIRED = False  # Username is not required
+ACCOUNT_EMAIL_REQUIRED = True  # Email is required
+ACCOUNT_AUTHENTICATION_METHOD = "email"  # Use email for authentication
+ACCOUNT_UNIQUE_EMAIL = True  # Ensure emails are unique
+ACCOUNT_CONFIRM_EMAIL_ON_GET =True
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+
+
+AUTH_USER_MODEL='users.CustomUser'
+# Django REST Auth settings
+
 
 AUTHENTICATION_BACKENDS = (
     'django.contrib.auth.backends.ModelBackend',
@@ -190,14 +203,18 @@ AUTHENTICATION_BACKENDS = (
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-REST_AUTH={
+REST_AUTH = {
     "USE_JWT": True,
-    "JWT_AUTH_HTTPONLY":False,
-    "JWT_AUTH_COOKIE":"Main-auth",
-    "JWT_AUTH_REFRESH_COOKIE":"Main-refresh-token",
+    "JWT_AUTH_HTTPONLY": False,
+    "JWT_AUTH_COOKIE": "Main-auth",
+    "JWT_AUTH_REFRESH_COOKIE": "Main-refresh-token",
+    "LOGIN_SERIALIZER": "users.serializers.CustomLoginSerializer",
+    "REGISTER_SERIALIZER": "users.serializers.CustomRegisterSerializer",
 }
+
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME":timedelta(minutes=5),
     "REFRESH_TOKEN_LIFETIME":timedelta(days=1),
 }
+
