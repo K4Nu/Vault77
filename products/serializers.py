@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from rest_framework.fields import SerializerMethodField
+from django_elasticsearch_dsl_drf.serializers import DocumentSerializer
+from .documents import ProductItemDocument
 
 from products.models import ProductItem, ProductImage, Color, Category, Size, ProductVariant
 
@@ -69,13 +71,15 @@ class SimpleProductItemSerializer(serializers.ModelSerializer):
 
 class ProductItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
+    description=serializers.CharField(source='product.description', read_only=True)
+    care_instructions=serializers.CharField(source='product.care_instructions', read_only=True)
     colors       = SerializerMethodField()
     images       = SerializerMethodField()
     variants= SerializerMethodField()
     related_items=SerializerMethodField()
     class Meta:
         model  = ProductItem
-        fields = ("product_name", "slug", "price", "colors", "images",'variants','related_items')
+        fields = ("product_name", "slug", "price",'description','images','colors','care_instructions','variants','related_items')
 
     def get_colors(self, obj):
         # Prefer the cached list of sibling items, fallback to DB
@@ -182,3 +186,14 @@ class CategoryProductItemSerializer(serializers.ModelSerializer):
     def get_variants(self, obj):
         variants = getattr(obj, 'all_variants', [])
         return ProductVariantSerializer(variants, many=True, context=self.context).data
+
+"""
+Documents below
+"""
+
+class ProductItemSearchSerializer(DocumentSerializer):
+    class Meta:
+        document = ProductItemDocument
+        fields = ("product_name", "product_description", "slug", "price")
+
+
